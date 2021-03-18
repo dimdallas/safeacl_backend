@@ -8,17 +8,17 @@ const authorization = require("../middleware/authorization")
 
 router.get("/", authorization, async(req, res) => {
     try {
-        // console.log(req.headers)
+        // console.log(req.user)
         //req.user has the payload from authorization middleware
         // res.json(req.user.id)
-
-        const user = await safePool.query(
-            "SELECT * FROM users WHERE user_id = $1",
+        
+        const doctor = await safePool.query(
+            "SELECT * FROM doctors WHERE doctor_id = $1",
             [
                 req.user.id
             ]
         )
-        const response = '{"username": "'+user.rows[0].username+'","email": "'+user.rows[0].email+'"}'
+        const response = '{"username": "'+doctor.rows[0].username+'","email": "'+doctor.rows[0].email+'"}'
         // console.log(response)
         res.json(JSON.parse(response))
         
@@ -33,7 +33,7 @@ router.get("/patients", authorization, async(req, res) => {
     try{
 
         const myPatients = await safePool.query(
-            "SELECT * FROM clients WHERE doctor_id = $1;",
+            "SELECT * FROM patients WHERE doctor_id = $1;",
             [
                 req.user.id
             ]
@@ -52,7 +52,7 @@ router.get("/patients/:param", authorization, async(req, res) => {
         console.log(param)
 
         const patient = await safePool.query(
-            "SELECT * FROM clients WHERE (id_num,doctor_id) = ($1,$2)",
+            "SELECT * FROM patients WHERE (id_num,doctor_id) = ($1,$2)",
             [
                 param,
                 req.user.id
@@ -64,7 +64,7 @@ router.get("/patients/:param", authorization, async(req, res) => {
         }
 
         const myPatients = await safePool.query(
-            "SELECT * FROM clients WHERE doctor_id = $1;",
+            "SELECT * FROM patients WHERE doctor_id = $1;",
             [
                 req.user.id
             ]
@@ -83,20 +83,20 @@ router.post("/patients", authorization, async(req, res) => {
         //1. destructure req.body 
         const { name, surname, id_num, age, height, email, description } = req.body;
         
-        //2. check if client exist (then error)
-        const client = await safePool.query(
-            "SELECT * FROM clients WHERE email = $1",
+        //2. check if patient exist (then error)
+        const patient = await safePool.query(
+            "SELECT * FROM patients WHERE email = $1",
             [
                 email
             ]
         )
-        if (client.rows.length !== 0){
+        if (patient.rows.length !== 0){
             return res.status(401).send("Patient already exists")
         }
         
-        //3. enter new client into database
+        //3. enter new patient into database
         const newPatient = await safePool.query(
-            "INSERT INTO clients (name, surname, id_num, age, height, email, description, doctor_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
+            "INSERT INTO patients (name, surname, id_num, age, height, email, description, doctor_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
             [
                 name,
                 surname,
@@ -122,7 +122,7 @@ router.put("/patients/:param", authorization, async(req,res) => {
         const {param} = req.params
                 
         const myPatients = await safePool.query(
-            "SELECT * FROM clients WHERE doctor_id = $1;",
+            "SELECT * FROM patients WHERE doctor_id = $1;",
             [
                 req.user.id
             ]
@@ -131,7 +131,7 @@ router.put("/patients/:param", authorization, async(req,res) => {
         const { name, surname, id_num, age, height, email, description } = req.body;
 
         const updatePatient = await safePool.query(
-            "UPDATE clients SET (name, surname, id_num, age, height, email, description) = ($1,$2,$3,$4,$5,$6,$7) WHERE id_num = $8",
+            "UPDATE patients SET (name, surname, id_num, age, height, email, description) = ($1,$2,$3,$4,$5,$6,$7) WHERE patient_id = $8",
             [
                 name,
                 surname,
@@ -140,7 +140,7 @@ router.put("/patients/:param", authorization, async(req,res) => {
                 height,
                 email,
                 description,
-                myPatients.rows[param-1].client_id
+                myPatients.rows[param-1].patient_id
             ]
         )
         
@@ -156,15 +156,15 @@ router.delete("/patients/:param", authorization, async(req, res) => {
         const {param} = req.params
 
         const myPatients = await safePool.query(
-            "SELECT * FROM clients WHERE doctor_id = $1;",
+            "SELECT * FROM patients WHERE doctor_id = $1;",
             [
                 req.user.id
             ]
         )
         const deletePatient = await safePool.query(
-            "DELETE FROM clients WHERE client_id = $1",
+            "DELETE FROM patients WHERE patient_id = $1",
             [
-                myPatients.rows[param-1].client_id
+                myPatients.rows[param-1].patient_id
             ]
         )
 

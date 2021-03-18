@@ -1,15 +1,23 @@
+--ALTER USER postgress PASSWORD '1234';
+
 CREATE DATABASE safeacltest;
 
 --\c into database
+--for extended display
+--\x on
+--\x off
 -- set extension
-CREATE TABLE users(
-    user_id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+--create tables
+CREATE TABLE doctors(
+    doctor_id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     username VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL
 );
-CREATE TABLE clients(
-    client_id SERIAL PRIMARY KEY,
+CREATE TABLE patients(
+    patient_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     surname VARCHAR(255) NOT NULL,
     id_num INT,
@@ -20,5 +28,5 @@ CREATE TABLE clients(
     doctor_id uuid NOT NULL
 );
 
-INSERT INTO users (username, email, password) VALUES ('a', 'a@a.com', 'aaaa');
-INSERT INTO clients (username, email, assword) VALUES ('a', 'a@a.com', 'aaaa');
+INSERT INTO doctors (username, email, password) VALUES ('a', 'a@a.com', 'aaaa');
+INSERT INTO patients;

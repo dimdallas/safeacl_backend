@@ -12,7 +12,7 @@ module.exports = async(req, res, next) => {
         }
 
         const payload = JWT.verify(jwt, process.env.jwtSecret)
-        
+        // console.log(payload)
         //3. match user
         req.user = payload.user
 
